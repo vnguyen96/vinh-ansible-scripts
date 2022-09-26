@@ -1,0 +1,43 @@
+---
+- name: InstallNessus
+  hosts: all
+  become: true
+  become_user: root
+
+  vars:
+    nessus_key: 
+      X-Key: '0c8f019e20a5f7be19acb4e0e095ec20190bba42c5b226c8c2f2ae9722112c10'
+### nessus_group should be set in your host file or group vars
+#    nessus_group:      
+  tasks:   
+  - name: Check if Nessus agent is running 
+    ansible.builtin.systemd:
+      name: nessusagent
+    register: nessusStatus
+
+  - name: Test connectivity to cloud.tenable.com
+    ansible.builtin.uri:
+      url: "https://cloud.tenable.com"
+    register: tenable_reachable
+    when: nessusStatus.status.LoadState == "not-found"  
+
+  - name: Pull custom nessus install script from tenable.com
+    ansible.builtin.get_url:
+      url: "https://cloud.tenable.com/install/agent?name={{ inventory_hostname}}&groups={{ nessus_group}}"
+      dest: "/home/ansible/"
+      headers: "{{ nessus_key}}"
+      mode: '744'
+    when: nessusStatus.status.LoadState == "not-found"
+
+  - name: Install Nessus Agent from pulled script
+    ansible.builtin.shell: ./agent
+    args:
+      chdir: "/home/ansible"
+      executable: /bin/bash
+    when: nessusStatus.status.LoadState == "not-found"
+  
+  - name: Confirm Nessus Agent service is enabled to start on boot and is running
+    ansible.builtin.systemd:
+      name: nessusagent
+      enabled: yes
+      state: started

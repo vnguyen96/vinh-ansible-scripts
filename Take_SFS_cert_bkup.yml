@@ -1,0 +1,36 @@
+---
+- name: The SFS cert backup
+  hosts: sfs
+  gather_facts: yes
+  become: yes
+
+  tasks:
+  
+  - name: Create directory for backup cert and key
+    ansible.builtin.file:
+      path: /home/ansible/backupcertandkey/072022
+      state: directory
+      owner: ansible
+      group: ansible
+      mode: 0755
+      
+
+  - name: Take backup of keys and certs
+    ansible.builtin.copy:
+      src: '{{item}}'          
+      dest: /home/ansible/backupcertandkey/072022
+      remote_src: yes
+      owner: ansible
+      group: ansible
+    loop:
+      - /var/lib/docker/volumes/sfs1000-ssl/_data/server.crt
+      - /var/lib/docker/volumes/sfs1000-ssl/_data/server.key
+      
+  - name: Move certs to ansible-control
+    ansible.builtin.fetch:
+      src: '{{item}}'
+      dest: /home/ansible/backups/certs/
+    loop:
+      - /home/ansible/backupcertandkey/072022/server.crt
+      - /home/ansible/backupcertandkey/072022/server.key
+

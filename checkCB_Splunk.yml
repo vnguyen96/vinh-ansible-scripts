@@ -1,0 +1,111 @@
+---
+- name: checkSecurity
+  hosts: all
+  become: true
+  become_user: root
+
+  vars:
+    skyline_cb_code: 'WZIDR85JWCX9FL@NCQE'
+    splunkTar: "Skyline-splunk-uf.tgz"
+    CarbonBlackTar: "carbonblack"
+    splunk_deployment_host: "172.28.174.176"
+    check: not-found
+  tasks:
+#############################################
+#CHECK IF SPLUNK & CARBON BLACK ARE INSTALLED
+#############################################
+  - name: Check if SplunkForwarder folder exists 
+    ansible.builtin.stat:
+      path: '/opt/splunkforwarder'
+    register: splunkFolder
+  
+  - name: Check if CarbonBlack folder exists 
+    ansible.builtin.stat:
+     path: '/opt/carbonblack'
+    register: cbFolder
+
+###########################################
+#CHECK IF SPLUNK & CARBON BLACK ARE RUNNING
+###########################################
+  - name: Check if Splunk daemon is running
+    ansible.builtin.systemd:
+      name: SplunkForwarder
+    register: splunkSystemd  
+  
+  - name: Check if CarbonBlack daemon is running
+    ansible.builtin.systemd:
+      name: cbagentd
+    register: cbSystemd
+  
+##############################################
+#CHECK IF SPLUNK IS CONFIGURED
+##############################################
+  - name: Check if splunk is configured 
+    ansible.builtin.stat:
+      path: "/opt/splunkforwarder/etc/apps/skyline-all-deploymentclient/default/deploymentclient.conf"
+    register: splunkConf
+
+############################################
+#SHOW SPLUNK AND CARBON BLACK STATUS
+############################################
+  - name: Print Carbonblack agent status
+    ansible.builtin.debug:
+      msg: " CB installed = {{ cbFolder.stat.exists }} ; CarbonBlack Daemon Status: {{ cbSystemd.status.ActiveState}}" 
+    
+  - name: Report Boxes missing Splunk Folder
+    ansible.builtin.debug:
+     msg: "Splunk Installed={{ splunkFolder.stat.exists}};  Splunk Configured = {{splunkConf.stat.exists}}" 
+      
+##############################################################
+#INSTALL SECTION
+##############################################################  
+  - name: Copy and unpack Splunk Tar in the /opt directory
+    ansible.builtin.unarchive:
+      src: "{{ splunkTar}}"
+      dest: "/opt/"
+      owner: "ansible"
+    when: not splunkFolder.stat.exists
+
+  - name: Copy and Unpack CarbonBlack installer in ansible home
+    ansible.builtin.unarchive:
+      src: "{{ CarbonBlackTar}}.tar"
+      dest: "/home/ansible"
+      owner: "ansible"
+    when: not cbFolder.stat.exists
+
+
+
+###############################################################
+#CONFIGURE SECTION
+###############################################################
+  - name: Install and configure CarbonBlack
+    ansible.builtin.shell:
+      cmd: "/home/ansible/install.sh '{{ skyline_cb_code}}'" 
+    when: not cbFolder.stat.exists
+
+  - name: Configure SplunkForwarder
+    ansible.builtin.shell:
+      cmd: "/opt/splunkforwarder/bin/splunk set deploy-poll {{ splunk_deployment_host}}:8089 --accept-license" 
+    when: not splunkConf.stat.exists 
+  
+  ## Ensure systemd Daemons are enabled to start on boot
+  - name: enable Splunk Systemd Unit
+    ansible.builtin.shell:
+      cmd: "/opt/splunkforwarder/bin/splunk enable boot-start -user root -systemd-managed 1 --no-prompt --accept-license" 
+    when:  splunkSystemd.status.LoadState == "not-found"
+
+  - name: Enable CarbonBlack Systemd Unit
+    ansible.builtin.systemd:
+      name: cbagentd
+      state: started
+
+  ###confirm Systemd Daemons are started 
+  - name: start Splunk Daemon (Systemd)
+    ansible.builtin.systemd:
+      name: SplunkForwarder
+      state: started
+
+  - name: start CarbonBlack Daemon (Systemd)
+    ansible.builtin.systemd:
+      name: cbagentd
+      state: started 

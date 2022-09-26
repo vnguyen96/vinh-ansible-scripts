@@ -1,0 +1,43 @@
+---
+- name: RTMP to RTSP
+  hosts: MCAC 
+  gather_facts: yes 
+  become: yes 
+
+  tasks: 
+
+  - name: Take Backups 
+    shell: cp /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table /home/skyline/sfs_streams_table.bkup.052022
+
+  - name: Change path for ctf-sfs3
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: 'rtmp://76.9.157.172:1935' 
+      replace: 'rtsp://76.9.157.172:554' 
+
+  - name: Change path for ctf-sfs3
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: 'rtmp://76.9.157.173:1935' 
+      replace: 'rtsp://76.9.157.173:554' 
+
+  - name: Change path for ctf-sfs3
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: 'rtmp://76.9.157.169:1935' 
+      replace: 'rtsp://76.9.157.169:554' 
+
+  - name: Change path for ctf-sfs3
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: 'rtmp://76.9.157.170:1935' 
+      replace: 'rtsp://76.9.157.170:554' 
+
+  - name: Change path for ctf-sfs3
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: 'rtmp://76.9.157.171:1935' 
+      replace: 'rtsp://76.9.157.171:554' 
+
+  - name: restart SFS1000 Container 
+    shell: docker restart sfs1000

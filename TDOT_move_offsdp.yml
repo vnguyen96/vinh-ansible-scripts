@@ -1,0 +1,11 @@
+---
+- name: Move off_usesdp.sh to target SFSs
+  hosts: TDOT
+  gather_facts: yes
+
+  tasks:
+  - name: Move off_usesdp.sh to target SFSs
+    ansible.builtin.copy:
+      src: /home/ansible/off_usesdp.sh
+      dest: /home/ansible/
+      mode: '770'

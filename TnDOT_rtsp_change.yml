@@ -1,0 +1,19 @@
+---
+- name: TnDOT RTSP url update
+  hosts: image 
+  gather_facts: yes 
+  become: yes 
+
+  tasks: 
+
+  - name: Take Backups 
+    shell: cp /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table /home/skyline/sfs_streams_table.bkup.052022
+
+  - name: Change rtsp url
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: '_high' 
+      replace: '?quality=high' 
+
+  - name: restart SFS1000 Container 
+    shell: docker restart sfs1000

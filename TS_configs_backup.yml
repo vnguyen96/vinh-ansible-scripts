@@ -1,0 +1,31 @@
+---
+- name: Take TS configs backups
+  hosts: CHARTTS
+  gather_facts: yes
+  become: yes
+
+  tasks:
+  - name: Create backups directory
+    ansible.builtin.file:
+      path: /home/ansible/backups/
+      state: directory
+      mode: '755'
+
+  - name: Copy backup
+    ansible.builtin.copy:
+      src: /var/lib/docker/volumes/
+      dest: /home/ansible/backups/
+      owner: ansible
+      group: ansible
+      mode: '755'
+      remote_src: true
+
+  - name: Archive config files
+    ansible.builtin.archive:
+      path: /home/ansible/backups/
+      dest: /home/ansible/backups/configs072022.tar.gz
+
+  - name: Move archive files to
+    ansible.builtin.fetch:
+      src: /home/ansible/backups/configs072022.tar.gz
+      dest: /home/ansible

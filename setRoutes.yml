@@ -1,0 +1,25 @@
+---
+- name: SetRoutes
+  hosts: all
+  become: true
+  become_user: root
+  serial: 60
+  gather_facts: false
+
+  tasks:
+  - name: Add Routes 
+    community.general.nmcli:
+      conn_name: ens192
+      state: present
+      autoconnect: yes
+      
+      routes4:
+        - '10.71.0.0/16 10.71.103.193'
+        - '10.71.103.192/26'
+        - '239.16.0.0/16'
+        - '239.71.0.0/16'
+        - '239.88.0.0/16'
+  - name: Restart network/ apply routes
+    ansible.builtin.systemd:
+      name: network
+      state: restarted

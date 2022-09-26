@@ -1,0 +1,11 @@
+---
+- name: Restart TS container
+  hosts: MiDOT
+  gather_facts: yes
+  become: yes
+  serial: 1
+
+  tasks:
+  - name: restart docker container
+    ansible.builtin.shell:
+      cmd: docker restart ts1000

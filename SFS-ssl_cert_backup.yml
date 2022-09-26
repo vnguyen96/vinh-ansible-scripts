@@ -1,0 +1,70 @@
+---
+- name: Back up and generate OpenSSL
+  hosts: sfs
+  gather_facts: yes
+  become: yes
+
+  tasks:
+  
+  - name: Create directory for backup cert and key
+    ansible.builtin.file:
+      path: /home/skyline/backupcertandkey/04-22-22
+      state: directory
+      owner: skyline
+      group: skyline
+      mode: 0755
+
+  - name: Take backup of keys and certs
+    ansible.builtin.copy:
+      src: '{{item}}'          
+      dest: /home/skyline/backupcertandkey/04-22-22/
+      remote_src: yes
+      owner: skyline
+      group: skyline
+    loop:
+      - /var/lib/docker/volumes/sfs1000-ssl/_data/server.crt
+      - /var/lib/docker/volumes/sfs1000-ssl/_data/server.key
+
+
+  - name: Create directory for new cert and key
+    ansible.builtin.file:
+      path: /home/skyline/newcertandkey/04-22-22
+      state: directory
+      owner: skyline
+      group: skyline
+      mode: 0755
+
+  - name: Install gcc libs
+    ansible.builtin.yum:
+      state: present
+      name:
+        - gcc
+        - openssl-devel
+        - libffi-devel
+        - python-devel
+
+  - name: Install cryptography
+    shell: pip install cryptography && exit
+
+  - name: General OpenSSL private key
+    community.crypto.openssl_privatekey:
+      path: /home/skyline/newcertandkey/04-22-22/server.key #Path to store the new .key file. Example: /home/skyline/newcertandkey/server.key
+      size: 2048
+      owner: skyline
+      group: skyline
+
+  - name: General OpenSSL CSR file #Generate the .csr and .key files and store them in /newcertandkey directory
+    community.crypto.openssl_csr:
+      path: /home/skyline/newcertandkey/04-22-22/server.csr            #Path to store the .csr file. Example: /home/skyline/newcertandkey/server.csr
+      privatekey_path: /home/skyline/newcertandkey/04-22-22/server.key
+      state_or_province_name: Maryland
+      locality_name: Glen Burnie
+      organization_name: Skyline Technology Solutions
+      organizational_unit_name:          #Client's name. Example: MiDot
+      common_name:                       #Domain name of the appliance. Example: micamerasmap.net
+      email_address: support@skylinenet.net
+      owner: skyline
+      group: skyline
+
+    
+      

@@ -1,0 +1,44 @@
+---
+- name: Write appliance facts into a csv file
+  hosts: sfs
+  become: true
+  
+  vars:
+    output_path: "/home/ansible/appliance_facts"
+    filename: "appliance_facts_{{ date }}.csv"
+
+  tasks:
+    - name: Generate CSV filename
+      set_fact: date="{{lookup('pipe','date +%Y%m%d')}}"
+      run_once: true
+      
+
+    - name: Create CSV file and set the header
+      ansible.builtin.lineinfile:
+        dest: "{{ output_path }}/{{ filename }}"
+        line:
+          hostname,ipv4
+        create: yes
+        state: present
+        owner: ansible
+        group: ansible
+      delegate_to: localhost
+    
+    - name: CSV - Get appliance facts
+      set_fact:
+        csv_tmp: >
+          {{ ansible_fqdn }},{{ ansible_default_ipv4['address'] }}
+
+    - name: CSV - Write information into .csv file
+      ansible.builtin.lineinfile:
+        insertafter: EOF
+        dest: "{{ output_path }}/{{ filename }}"
+        line: "{{ csv_tmp }}"
+      delegate_to: localhost
+
+    - name: CSV - Blank lines removal
+      ansible.builtin.lineinfile:
+        path: "./{{ output_path }}/{{ filename }}"
+        state: absent
+        regex: '^\s*$'
+      delegate_to: localhost

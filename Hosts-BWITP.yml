@@ -1,0 +1,95 @@
+---
+all:
+  children:
+
+#---------------------------------------------
+# Groups By Device Type
+#---------------------------------------------
+    #This section adds all appliances to the server group 
+    #UseCase: applying splunk to all servers, new security tool for base OS, System update regardless of appliance type 
+    server:
+      children:
+        ts:
+        sfs:
+        vero:
+        stream_manager:
+        claris:
+        snapshot_server:
+
+    ts:
+      children:
+        bwitp_ts:   
+    sfs:   
+      children:
+        bwitp_sfs:
+    vero:
+      children:
+        bwitp_vero:
+    stream_manager:
+      children:
+        bwitp_sm:   
+    claris:
+      children:
+        bwitp_claris:
+    snapshot_server:
+      children:
+        bwitp_snap:
+        
+#--------------------------------------------
+# Groups By Customer 
+#--------------------------------------------
+    bwitp:
+      children:
+        bwitp_ts:
+          hosts: 
+
+        bwitp_sfs:
+          hosts:
+            mcac-bwitp-sfs1:
+            ansible_host: 10.55.13.66
+            mcac-bwitp-sfs2:
+            ansible_host: 10.55.13.67
+            mcac-bwitp-sfs3:
+            ansible_host: 10.55.13.68
+            mcac-bwitp-sfs4:
+            ansible_host: 10.55.13.69
+            mcac-bwitp-sfs5:
+            ansible_host: 10.55.13.70
+            mcac-bwitp-sfs6:
+            ansible_host: 10.55.13.71
+            mcac-bwitp-sfs7:
+            ansible_host: 10.55.13.72
+            mcac-bwitp-sfs8:
+            ansible_host: 10.55.13.73
+            mcac-bwitp-sfs9:
+            ansible_host: 10.55.13.74
+            mcac-bwitp-sfs10:
+            ansible_host: 10.55.13.75
+            mcac-bwitp-sfs11:
+            ansible_host: 10.55.13.76
+            mcac-bwitp-sfs12:
+            ansible_host: 10.55.13.77
+            mcac-bwitp-sfs13:
+            ansible_host: 10.55.13.78
+            mcac-bwitp-sfs14:
+            ansible_host: 10.55.13.79
+            mcac-bwitp-sfs15:
+            ansible_host: 10.55.13.80
+            mcac-bwitp-sfs16:
+            ansible_host: 10.55.13.81
+            mcac-bwitp-sfs17:
+            ansible_host: 10.55.13.82
+
+        bwitp_sfs:
+          hosts:
+
+        bwitp_claris:
+          hosts:
+
+        bwitp_vero:
+          hosts:
+
+        bwitp_snap:
+          hosts:
+
+    

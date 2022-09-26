@@ -1,0 +1,31 @@
+---
+- name: CDOTStreamsAdd
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+  - name: Move first_lb_SFS.sh script to the first SFS
+    when: inventory_hostname in groups['first_lb_SFS']
+    ansible.builtin.copy:
+      src: /home/ansible/CDOT/CDOTStreamAdd/first_lb_SFS.sh
+      dest: /home/ansible/
+      mode: '770'
+    
+  - name: Run first_lb_SFS.sh script on the first SFS
+    when: inventory_hostname in groups['first_lb_SFS']
+    shell: ./first_lb_SFS.sh
+
+
+  - name: Move second_hb_SFS.sh script to the second SFS
+    when: inventory_hostname in groups['second_hb_SFS']
+    ansible.builtin.copy:
+      src: /home/ansible/CDOT/CDOTStreamAdd/second_hb_SFS.sh
+      dest: /home/ansible
+      mode: '770'
+    
+  - name: Run second_hb_SFS.sh script on the second SFS
+    when: inventory_hostname in groups['second_hb_SFS']
+    shell: ./second_hb_SFS.sh
+
+
+

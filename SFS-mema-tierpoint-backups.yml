@@ -1,0 +1,28 @@
+---
+- name: Take streams backups
+  hosts: MEMAandTierpoint
+  gather_facts: yes
+  become: yes 
+
+  tasks:
+  - name: Create backups directory
+    ansible.builtin.file:
+      path: /home/skyline/backups/4-13-2022
+      state: directory
+      mode: '755'
+
+  - name: Copy backup 
+    ansible.builtin.copy:
+      src: /var/lib/docker/volumes/sfs1000-enzyme/_data/config
+      dest: /home/skyline/backups/4-13-2022/
+      owner: skyline
+      group: skyline
+      mode: '755'
+      remote_src: true
+
+  - name: Archive config files
+    ansible.builtin.archive:
+      path: /home/skyline/backups/4-13-2022/config
+      dest: /home/skyline/backups/4-13-2022/config.tar.gz
+      
+

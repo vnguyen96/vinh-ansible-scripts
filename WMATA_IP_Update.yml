@@ -1,0 +1,31 @@
+---
+- name: WMATA IP update
+  hosts: MCAC 
+  gather_facts: yes 
+  become: yes 
+
+  tasks: 
+
+  - name: Take Backups 
+    shell: cp /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table /home/skyline/sfs_streams_table.bkup.052022
+
+  - name: Change IP for ctf-sfs3
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: '76.9.157.17' 
+      replace: '76.9.157.172' 
+
+  - name: Change IP for ctf-sfs4
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: '76.9.157.18' 
+      replace: '76.9.157.173' 
+
+  - name: Change IP for ctf-sfs7
+    ansible.builtin.replace: 
+      path: /var/lib/docker/volumes/sfs1000-enzyme/_data/config/sfs_streams_table
+      regexp: '76.9.157.1720' 
+      replace: '76.9.157.170' 
+
+  - name: restart SFS1000 Container 
+    shell: docker restart sfs1000

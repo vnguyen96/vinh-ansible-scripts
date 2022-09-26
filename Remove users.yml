@@ -1,0 +1,24 @@
+---
+- name: Remove users from CDOT appliances
+  hosts: CDOTAppliances
+  gather_facts: yes
+  become: yes
+  vars:
+    user_names:
+      - 'user1' 
+      - 'user2'
+
+  tasks:
+  - name: Remove user from appliances
+    ansible.builtin.user:
+      name: "{{ item }}"
+      state: absent
+      remove: yes
+    loop: "{{ user_names }}"
+
+  - name: Remove users from sudoers 
+    ansible.builtin.lineinfile:
+      path: /etc/sudoers
+      state: "{{ item.state | default('absent') }}"
+      line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
+    loop: "{{ user_names }}"

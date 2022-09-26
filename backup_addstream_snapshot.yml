@@ -1,0 +1,13 @@
+---
+- name: Take backup and remove streams from snapshot server
+  hosts: snapshot servers
+  gather_facts: yes
+  become: yes
+  vars:
+    stream_names:
+      - 'stream name'
+
+  tasks:
+    name: take backup 
+      ansible.builtin.copy:
+        

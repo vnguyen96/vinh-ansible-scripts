@@ -1,0 +1,26 @@
+---
+- name: Add users from CDOT appliances
+  hosts: CDOTAppliances
+  gather_facts: yes
+  become: yes
+  vars:
+    user_names:
+      - 'user1'
+      - 'user2'
+
+  tasks:
+  - name: Add user to appliances
+    ansible.builtin.user:
+      name: "{{ item }}"
+      state: present
+      groups: docker
+      append: yes
+    loop: "{{ user_names }}"
+
+  - name: Add users to sudoers 
+    ansible.builtin.lineinfile:
+      path: /etc/sudoers
+      state: "{{ item.state | default('present') }}"
+      line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
+    loop: "{{ user_names }}"
+  
